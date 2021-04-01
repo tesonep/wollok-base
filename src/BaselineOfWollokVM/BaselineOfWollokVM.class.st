@@ -22,6 +22,8 @@ BaselineOfWollokVM >> baseline: spec [
 				package: 'Wollok-Parser' with: [ spec requires: 'SmaCC' ];
 				package: 'WollokVM-Interpreter' 
 					with: [ spec requires: #('Wollok-Parser') ];
+				package: 'WollokVM-Interpreter-Tests' 
+					with: [ spec requires: #('WollokVM-Interpreter') ];
 				package: 'Wollok-UI' 
 					with: [ spec requires: #('WollokVM-Interpreter') ]
 			]
