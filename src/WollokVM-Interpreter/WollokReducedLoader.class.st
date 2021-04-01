@@ -5,11 +5,12 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-WollokReducedLoader >> addBindingOfClass: aName of: selector in: anInterpreter [
+WollokReducedLoader >> addBindingOfClass: aName fromString: aString in: anInterpreter [
 
 	| anAST aWollokClass |
 	
-	anAST := WollokParser parse: (self perform: selector).
+	anAST := WollokParser parse: aString.
+	anAST attributeNamed: #source put: aString.
 
 	aWollokClass := WollokVMClass new
 		name: aName;
@@ -17,6 +18,12 @@ WollokReducedLoader >> addBindingOfClass: aName of: selector in: anInterpreter [
 		yourself.
 	
 	anInterpreter addBinding: aName value: aWollokClass.
+]
+
+{ #category : #'as yet unclassified' }
+WollokReducedLoader >> addBindingOfClass: aName of: selector in: anInterpreter [
+
+	self addBindingOfClass: aName fromString: (self perform: selector) in: anInterpreter 
 ]
 
 { #category : #'as yet unclassified' }

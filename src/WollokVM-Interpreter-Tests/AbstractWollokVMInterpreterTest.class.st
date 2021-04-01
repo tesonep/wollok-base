@@ -22,7 +22,11 @@ AbstractWollokVMInterpreterTest >> interpretExpression: aString [
 { #category : #parsing }
 AbstractWollokVMInterpreterTest >> parse: aString [ 
 	
-	^ WollokParser parse: aString
+	| anAST |
+	anAST := WollokParser parse: aString.
+	anAST attributeNamed: #source put: aString.
+
+	^ anAST
 ]
 
 { #category : #running }

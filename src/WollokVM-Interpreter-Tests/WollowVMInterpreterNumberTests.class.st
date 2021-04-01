@@ -1,7 +1,7 @@
 Class {
 	#name : #WollowVMInterpreterNumberTests,
 	#superclass : #AbstractWollokVMInterpreterTest,
-	#category : #'WollokVM-Interpreter-Tests-Essential-Numbers'
+	#category : #'WollokVM-Interpreter-Tests-2.Essential-Numbers'
 }
 
 { #category : #'tests - constants' }
@@ -10,6 +10,26 @@ WollowVMInterpreterNumberTests >> testLiteralDecimalNumberIsAWollokNumber [
 	| maybeANumber |
 
 	maybeANumber := self interpretExpression: '1.73'.
+
+	self assert: maybeANumber wollokClassName equals: 'wollok.lang.Number'
+]
+
+{ #category : #'tests - constants' }
+WollowVMInterpreterNumberTests >> testLiteralNegativeDecimalNumberIsAWollokNumber [
+
+	| maybeANumber |
+
+	maybeANumber := self interpretExpression: '-1.73'.
+
+	self assert: maybeANumber wollokClassName equals: 'wollok.lang.Number'
+]
+
+{ #category : #'tests - constants' }
+WollowVMInterpreterNumberTests >> testLiteralNegativeNumberIsAWollokNumber [
+
+	| maybeANumber |
+
+	maybeANumber := self interpretExpression: '-2'.
 
 	self assert: maybeANumber wollokClassName equals: 'wollok.lang.Number'
 ]

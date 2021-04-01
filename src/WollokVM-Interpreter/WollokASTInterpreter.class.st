@@ -13,6 +13,12 @@ WollokASTInterpreter >> addBinding: aName value: aWollokVMClass [
 	bindings at: aName put: aWollokVMClass
 ]
 
+{ #category : #bindings }
+WollokASTInterpreter >> addBindingOfClass: aName fromString: aString [
+
+	WollokReducedLoader new addBindingOfClass: aName fromString: aString in: self
+]
+
 { #category : #interpreting }
 WollokASTInterpreter >> initialize [
 

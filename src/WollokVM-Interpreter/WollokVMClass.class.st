@@ -9,6 +9,13 @@ Class {
 }
 
 { #category : #accessing }
+WollokVMClass >> allVariables [
+
+	self flag: #todo.
+	^ #()
+]
+
+{ #category : #accessing }
 WollokVMClass >> ast [
 	^ ast
 ]
@@ -26,4 +33,17 @@ WollokVMClass >> name [
 { #category : #accessing }
 WollokVMClass >> name: anObject [
 	name := anObject
+]
+
+{ #category : #printing }
+WollokVMClass >> printOn: aStream [
+
+	super printOn: aStream.
+	
+	aStream
+		space;
+		nextPut: $(;
+		print: name;
+		nextPut: $)
+		 
 ]
