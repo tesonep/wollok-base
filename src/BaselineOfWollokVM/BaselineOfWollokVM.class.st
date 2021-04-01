@@ -19,5 +19,10 @@ BaselineOfWollokVM >> baseline: spec [
 						repository: 'github://j-brant/Smacc:7aafca9' ].
 			
 			spec
-				package: 'Wollok-Parser' with: [ spec requires: 'SmaCC' ]]
+				package: 'Wollok-Parser' with: [ spec requires: 'SmaCC' ];
+				package: 'WollokVM-Interpreter' 
+					with: [ spec requires: #('Wollok-Parser') ];
+				package: 'Wollok-UI' 
+					with: [ spec requires: #('WollokVM-Interpreter') ]
+			]
 ]

@@ -12,6 +12,12 @@ WollokNumberLiteralNode >> acceptVisitor: anAbstractNodeVisitor [
 	^ anAbstractNodeVisitor visitNumberLiteral: self
 ]
 
+{ #category : #accessing }
+WollokNumberLiteralNode >> numberValue [
+	
+	^ value value asNumber
+]
+
 { #category : #generated }
 WollokNumberLiteralNode >> tokenVariables [
 	^ #(#value)
