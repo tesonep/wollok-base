@@ -6,7 +6,7 @@ WollokAbstractNodeNode >> gtInspectorSourceCodeIn: composite [
 
 	^ composite text
 		title: [ 'Source code' translated ];
-		display: [ self source ];
+		display: [ self completeSource ];
 		initialize: [ :presentation | 
 			presentation selectionInterval: self sourceInterval ];
 		when: [ self source notNil ]

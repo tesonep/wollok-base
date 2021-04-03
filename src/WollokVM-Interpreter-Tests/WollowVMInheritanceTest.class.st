@@ -35,7 +35,7 @@ WollowVMInheritanceTest >> setUp [
 	interpreter addBindingOfClass: 'MyClass' fromString: '
 class	MyClass inherits MySuperclass {  
 	override method setA(aValue){
-		super.setA(aValue + 1)
+		super(aValue + 1)
 	}
 }
 '.

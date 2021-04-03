@@ -58,6 +58,13 @@ WollokSyntaxHighlighter >> visitClosure: aWollokClosureNode [
 ]
 
 { #category : #visiting }
+WollokSyntaxHighlighter >> visitConstructorCall: aWollokConstructorCallNode [ 
+
+	"self shouldBeImplemented"
+	
+]
+
+{ #category : #visiting }
 WollokSyntaxHighlighter >> visitFile: aWollokFileNode [ 
 	
 	aWollokFileNode comments do: [ :e |
