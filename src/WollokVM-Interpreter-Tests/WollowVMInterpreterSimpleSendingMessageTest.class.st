@@ -1,11 +1,11 @@
 Class {
-	#name : #WollowVMInterpreterSimpleObjectTest,
+	#name : #WollowVMInterpreterSimpleSendingMessageTest,
 	#superclass : #AbstractWollokVMInterpreterTest,
-	#category : #'WollokVM-Interpreter-Tests-1.Essential-Objects'
+	#category : #'WollokVM-Interpreter-Tests-3.Objects and Classes'
 }
 
 { #category : #running }
-WollowVMInterpreterSimpleObjectTest >> setUp [ 
+WollowVMInterpreterSimpleSendingMessageTest >> setUp [ 
 
 	super setUp.
 	
@@ -23,7 +23,7 @@ class	MyClass {
 ]
 
 { #category : #tests }
-WollowVMInterpreterSimpleObjectTest >> testNewExpressionReturnsWollokObjectOfCorrectClass [
+WollowVMInterpreterSimpleSendingMessageTest >> testNewExpressionReturnsWollokObjectOfCorrectClass [
 
 	| anObject |
 	anObject := self interpretExpression: 'new MyClass()'.
@@ -32,7 +32,7 @@ WollowVMInterpreterSimpleObjectTest >> testNewExpressionReturnsWollokObjectOfCor
 ]
 
 { #category : #tests }
-WollowVMInterpreterSimpleObjectTest >> testSendingAMessageThatReturnsIntegerConstantReturnsConstantValue [
+WollowVMInterpreterSimpleSendingMessageTest >> testSendingAMessageThatReturnsIntegerConstantReturnsConstantValue [
 
 	| anObject |
 	anObject := self interpretExpression: 'new MyClass().answerToEverything()'.
@@ -41,7 +41,7 @@ WollowVMInterpreterSimpleObjectTest >> testSendingAMessageThatReturnsIntegerCons
 ]
 
 { #category : #tests }
-WollowVMInterpreterSimpleObjectTest >> testSendingAMessageThatReturnsIntegerConstantReturnsNumber [
+WollowVMInterpreterSimpleSendingMessageTest >> testSendingAMessageThatReturnsIntegerConstantReturnsNumber [
 
 	| anObject |
 	anObject := self interpretExpression: 'new MyClass().answerToEverything()'.

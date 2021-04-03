@@ -31,7 +31,14 @@ WollokReducedLoader >> loadInto: anInterpreter [
 
 	self addBindingOfClass: 'wollok.lang.Object' of: #wollokLangObject in: anInterpreter.
 	self addBindingOfClass: 'wollok.lang.Number' of: #wollokLangNumber in: anInterpreter.	
-	self addBindingOfClass: 'wollok.lang.Boolean' of: #wollokLangBoolean in: anInterpreter.		
+	self addBindingOfClass: 'wollok.lang.Boolean' of: #wollokLangBoolean in: anInterpreter.
+
+	self addBindingOfClass: 'wollok.lang.Collection' of: #wollokLangCollection in: anInterpreter.	
+	self addBindingOfClass: 'wollok.lang.Set' of: #wollokLangSet in: anInterpreter.
+	self addBindingOfClass: 'wollok.lang.List' of: #wollokLangList in: anInterpreter.
+
+	self addBindingOfClass: 'wollok.lang.String' of: #wollokLangString in: anInterpreter.
+	self addBindingOfClass: 'wollok.lang.Exception' of: #wollokLangException in: anInterpreter.							
 ]
 
 { #category : #'as yet unclassified' }
@@ -72,6 +79,1095 @@ WollokReducedLoader >> wollokLangBoolean [
   method negate() native
 }
 '
+]
+
+{ #category : #'as yet unclassified' }
+WollokReducedLoader >> wollokLangCollection [
+
+^ '/**
+ * The root class in the collection hierarchy.
+ * A collection represents a group of objects, known as its elements.
+ */
+class Collection {
+  /**
+   * Answers the element that is considered to be/have the maximum value.
+   * The criteria is given by a closure that receives a single element
+   * as input (one of the element). The closure must return a comparable
+   * value (something that understands the >, >= messages).
+   * If collection is empty, an ElementNotFound exception is thrown.
+   *
+   * Example:
+   *       ["a", "ab", "abc", "d" ].max({ e => e.length() })
+   *            => Answers "abc"
+   *
+   *       [].max({ e => e.length() })
+   *            => Throws error, list must not be empty
+   */
+  method max(closure) {
+    self.checkNotNull(closure, "max")
+    return self.maxIfEmpty(closure, { throw new ElementNotFoundException(message = "collection is empty") })
+  }
+
+  /**
+   * Answers the element that represents the maximum value in the collection.
+   * The criteria is by direct comparison of the elements (they must be sortable).
+   * If collection is empty, an ElementNotFound exception is thrown.
+   *
+   * Example:
+   *       [11, 1, 4, 8, 3, 15, 6].max() =>  Answers 15
+   *       [].max()                      =>  Throws error, list must not be empty
+   */
+  method max() = self.max({it => it})
+
+  /**
+   * Answers the element that is considered to be/have the maximum value,
+   * or applies a closure if the collection is empty.
+   * The criteria is given by a closure that receives a single element
+   * as input (one of the element). The closure must return a comparable
+   * value (something that understands the >, >= messages).
+   * The closure to execute when the collection is empty is given as a second
+   * argument.
+   *
+   * Example:
+   *       ["a", "ab", "abc", "d" ].maxIfEmpty({ e => e.length() }, { "default" })
+   *            => Answers "abc"
+   *
+   *       [].maxIfEmpty({ e => e.length() }, { "default" })
+   *            => Answers "default"
+   */
+  method maxIfEmpty(toComparableClosure, emptyCaseClosure) {
+    self.checkNotNull(toComparableClosure, "maxIfEmpty")
+    self.checkNotNull(emptyCaseClosure, "maxIfEmpty")
+    return self.absolute(toComparableClosure, { a, b => a > b }, emptyCaseClosure)
+  }
+
+  /**
+   * Answers the element that is considered to be/have the maximum value,
+   * or applies a closure if the collection is empty.
+   * The criteria is by direct comparison of the elements.
+   * The closure to execute when the collection is empty is given as a second
+   * argument.
+   *
+   * Example:
+   *       [11, 1, 4, 8, 3, 15, 6].maxIfEmpty({ 99 }) =>  Answers 15
+   *       [].maxIfEmpty({ 99 })                      =>  Answers 99
+   */
+  method maxIfEmpty(emptyCaseClosure) = self.maxIfEmpty({it => it}, emptyCaseClosure)
+
+  /**
+   * Answers the element that is considered to be/have the minimum value.
+   * The criteria is given by a closure that receives a single element
+   * as input (one of the element). The closure must return a comparable
+   * value (something that understands the <, <= messages).
+   *
+   * Example:
+   *       ["ab", "abc", "hello", "wollok world"].min({ e => e.length() })
+   *             =>  Answers "ab"
+   *
+   *       [].min({ e => e.length() })
+   *             => Throws error, list must not be empty
+   */
+  method min(closure) {
+    self.checkNotNull(closure, "min")
+    return self.absolute(closure, { a, b => a < b }, { throw new ElementNotFoundException(message = "collection is empty") })
+  }
+
+  /**
+   * Answers the element that represents the minimum value in the
+   * non-empty collection.
+   * The criteria is by direct comparison of the elements.
+   *
+   * Example:
+   *       [11, 1, 4, 8, 3, 15, 6].min()  => Answers 1
+   *       [].min()                       => Throws error, list must not be empty
+   */
+  method min() = self.min({it => it})
+
+  /**
+   * Answers the element that is considered to be/have the minimum value,
+   * or applies a closure if the collection is empty.
+   * The criteria is given by a closure that receives a single element
+   * as input (one of the element). The closure must return a comparable
+   * value (something that understands the >, >= messages).
+   * The closure to execute when the collection is empty is given as a second
+   * argument.
+   *
+   * Example:
+   *       ["ab", "abc", "hello", "wollok world"].minIfEmpty({ e => e.length() }, { "default" })
+   *             =>  Answers "ab"
+   *
+   *       [].minIfEmpty({ e => e.length() }, { "default" })
+   *             => Answers "default"
+   */
+  method minIfEmpty(toComparableClosure, emptyCaseClosure) {
+    self.checkNotNull(toComparableClosure, "minIfEmpty")
+    self.checkNotNull(emptyCaseClosure, "minIfEmpty")
+    return self.absolute(toComparableClosure, { a, b => a < b }, emptyCaseClosure)
+  }
+
+  /**
+   * Answers the element that is considered to be/have the minimum value,
+   * or applies a closure if the collection is empty.
+   * The criteria is by direct comparison of the elements.
+   * The closure to execute when the collection is empty is given as a second
+   * argument.
+   *
+   * Example:
+   *       [11, 1, 4, 8, 3, 15, 6].minIfEmpty({ 99 })  => Answers 1
+   *       [].minIfEmpty({ 99 })                       => Answers 99
+   */
+  method minIfEmpty(emptyCaseClosure) {
+    self.checkNotNull(emptyCaseClosure, "minIfEmpty")
+    return self.minIfEmpty({it => it}, emptyCaseClosure)
+  }
+
+  /** @private */
+  method absolute(closure, criteria, emptyCaseClosure) {
+    self.checkNotNull(closure, "absolute")
+    self.checkNotNull(criteria, "absolute")
+    self.checkNotNull(emptyCaseClosure, "absolute")
+    if (self.isEmpty()) {
+      return emptyCaseClosure.apply()
+    }
+    const result = self.fold(null, { acc, e =>
+      const n = closure.apply(e)
+      if (acc == null)
+        e -> n
+      else {
+        if (criteria.apply(n, acc.y()))
+          e -> n
+        else
+          acc
+      }
+    })
+    return result.x()
+  }
+
+  /**
+   * Answers the unique element in the collection.
+   * If collection is empty, an error is thrown.
+   * If collection has more than one element, an error is thrown.
+   *
+   * Example:
+   *       [1].uniqueElement()    => Answers 1
+   *       [].uniqueElement()     => Throws error, list must not be empty
+   *       [1, 2].uniqueElement() => Throws error, list must have one element
+   */
+  method uniqueElement() {
+    self.validateNotEmpty("uniqueElement")
+    const size = self.size()
+    if (size > 1)
+      throw new Exception(message = "Illegal operation ''uniqueElement'' on collection with " + size.toString() + " elements")
+    return self.anyOne()
+  }
+
+  /**
+   * Concatenates this collection to all elements from the given
+   * collection parameter giving a new collection
+   * (no side effect)
+   *
+   * Example:
+   *    [1, 2] + [3]   => Answers [1, 2, 3]
+   *    [1, 2] + #{3}  => supports concatenation between lists and sets, answers [1, 2, 3]
+   *    #{} + []       => Answers #{}
+   */
+  method +(elements) {
+    const newCol = self.copy()
+    newCol.addAll(elements)
+    return newCol
+  }
+
+  /**
+   * Adds all elements from the given collection parameter to self collection.
+   * This is a side effect operation.
+   *
+   * Example:
+   *    const list = []
+   *    list.addAll(#{2, 4})  => list == [2, 4], always pointing to a list
+   */
+  method addAll(elements) {
+    self.checkNotNull(elements, "addAll")
+    elements.forEach { element => self.add(element) }
+  }
+
+  /**
+   * Removes all elements of the given collection parameter from self collection.
+   * This is a side effect operation.
+   *
+   * Example:
+   *    const list = [1, 6, 5]
+   *    list.removeAll([6]) => list == [1, 5]
+   */
+  method removeAll(elements) {
+    self.checkNotNull(elements, "removeAll")
+    elements.forEach { element => self.remove(element) }
+  }
+
+  /**
+  * Removes those elements that meet a given condition.
+  * This is a side effect operation.
+  * Supports empty collections.
+  *
+  * Example:
+  *    const list = [1, 6, 5]
+  *    list.removeAllSuchThat { e => e.even() } => list == [1, 5]
+  */
+  method removeAllSuchThat(closure) {
+    self.checkNotNull(closure, "removeAllSuchThat")
+    self.removeAll( self.filter(closure) )
+  }
+
+  /**
+   * Tells whether self collection has no elements
+   *
+   * Example:
+   *    [1, 6, 5].isEmpty() => Answers false
+   *    [].isEmpty()        => Answers true
+   */
+  method isEmpty() = self.size() == 0
+
+  /**
+   * @private
+   * Throws error if self collection is empty
+   */
+  method validateNotEmpty(operation) {
+    if (self.isEmpty())
+      throw new Exception(message = "Illegal operation ''" + operation + "'' on empty collection")
+  }
+
+  /**
+   * Performs an operation on every element of self collection.
+   * The logic to execute is passed as a closure that takes a single parameter.
+   * Supports empty collections.
+   * @returns nothing
+   *
+   * Example:
+   *      plants.forEach { plant => plant.takeSomeWater() }
+   */
+  method forEach(closure) {
+    self.checkNotNull(closure, "forEach")
+    self.fold(null, { seed, element =>
+      closure.apply(element)
+      seed
+    })
+  }
+
+  /**
+   * Answers whether all the elements of self collection satisfy a given
+   * condition. The condition is a closure argument that takes a single
+   * element and answers a boolean value.
+   *
+   * @returns true/false
+   *
+   * Example:
+   *      plants.all({ plant => plant.hasFlowers() })
+   *      [1, 3, 5].all { number => number.odd() }    => Answers true
+   *      [].all { number => number.odd() }           => Answers true
+   */
+  method all(predicate) {
+    self.checkNotNull(predicate, "all")
+    return self.fold(true, { seed, element => if (!seed) seed else predicate.apply(element) })
+  }
+
+  /**
+   * Tells whether at least one element of self collection satisfies a
+   * given condition. The condition is a closure argument that takes a
+   * single element and answers a boolean value.
+   * @returns true/false
+   *
+   * Example:
+   *      plants.any({ plant => plant.hasFlowers() })
+   *      [1, 2, 3].any { number => number.even() }   ==> Answers true
+   *      [].any { number => number.even() }          ==> Answers false
+   */
+  method any(predicate) {
+    self.checkNotNull(predicate, "any")
+    return self.fold(false, { seed, element => if (seed) seed else predicate.apply(element) })
+  }
+
+  /**
+   * Answers the element of self collection that satisfies a given condition.
+   * If more than one element satisfies the condition then it depends
+   * on the specific collection class which element will be returned.
+   *
+   * @returns the element that complies the condition
+   * @throws ElementNotFoundException if no element matched the given predicate
+   *
+   * Example:
+   *      users.find { user => user.name() == "Cosme Fulanito" }
+   *      #{1, 4, 5}.find { number => number.even() }  => Answers 4
+   *      #{1, 3}.find { number => number.even() }     => Throws ElementNotFoundException
+   *      #{}.find { number => number.even() }         => Throws ElementNotFoundException
+   */
+  method find(predicate) {
+    self.checkNotNull(predicate, "find")
+    return self.findOrElse(predicate, {
+      throw new ElementNotFoundException(message = "there is no element that satisfies the predicate")
+    })
+  }
+
+  /**
+   * Answers the element of self collection that satisfies a given condition,
+   * or the given default otherwise, if no element matched the predicate.
+   * If more than one element satisfies the condition then it depends on the specific
+   * collection class which element will be returned.
+   *
+   * @returns the element that complies the condition or the default value
+   *
+   * Example:
+   *      users.findOrDefault({ user => user.name() == "Cosme Fulanito" }, homer)
+   *      [1, 3, 5].findOrDefault({ number => number.even() }, 0)  => Answers 0
+   *      [].findOrDefault({ number => number.even() }, 0)         => Answers 0
+   */
+  method findOrDefault(predicate, value) =  self.findOrElse(predicate, { value })
+
+  /**
+   * Answers the element of self collection that satisfies a given condition,
+   * or the the result of evaluating the given continuation.
+   * If more than one element satisfies the condition then it depends on the
+   * specific collection class which element will be returned.
+   *
+   * @returns the element that complies the condition or the result
+   * of evaluating the continuation
+   *
+   * Example:
+   *      users.findOrElse({ user => user.name() == "Cosme Fulanito" }, { homer })
+   *      [1, 3, 5].findOrElse({ number => number.even() }, { 6.max(4) }) => Answers 6
+   *      [].findOrElse({ number => number.even() }, { false })           => Answers false
+   */
+  method findOrElse(predicate, continuation) native
+
+  /**
+   * Counts all elements of self collection that satisfies a given condition
+   * The condition is a closure argument that takes a single element and
+   * answers a number.
+   * @returns an integer number
+   *
+   * Example:
+   *      plants.count { plant => plant.hasFlowers() }
+   *      #{1, 2, 3, 4, 5}.count { number => number.odd() }  => Answers 3
+   *      #{}.count { number => number.odd() }               => Answers 0
+   */
+  method count(predicate) {
+    self.checkNotNull(predicate, "count")
+    return self.fold(0, { total, element => if (predicate.apply(element)) total+1 else total  })
+  }
+
+  /**
+   * Counts the occurrences of a given element in self collection.
+   * @returns an integer number
+   *
+   * Example:
+   *      [1, 8, 4, 1].occurrencesOf(1)  => Answers 2
+   *      [].occurrencesOf(2)            => Answers 0
+   */
+  method occurrencesOf(element) = self.count({it => it == element})
+
+  /**
+   * Collects the sum of each value for all elements.
+   * This is similar to call a map {} to transform each element into a
+   * number object and then adding all those numbers.
+   * The condition is a closure argument that takes a single element and
+   * answers a boolean value.
+   *
+   * @returns an integer
+   *
+   * Example:
+   *      const totalNumberOfFlowers = plants.sum{ plant => plant.numberOfFlowers() }
+   *      [].sum { employee => employee.salary() }   => Answers 0
+   */
+  method sum(closure) {
+    self.checkNotNull(closure, "sum")
+    return self.fold(0, { total, element => total + closure.apply(element) })
+  }
+
+  /**
+   * Sums all elements in the collection.
+   * @returns a number
+   *
+   * Example:
+   *      [1, 2, 3, 4, 5].sum()  => Answers 15
+   *      [].sum()               => Answers 0
+   */
+  method sum() = self.sum( {it => it} )
+
+  /**
+   * Answers a new collection that contains the result of transforming
+   * each of self collection''s elements using a given closure.
+   * The condition is a closure argument that takes a single element
+   * and answers an object.
+   * @returns another list
+   *
+   * Example:
+   *      const ages = users.map({ user => user.age() })
+   *      [1, 2, 3].map { number => number.odd() }  => Answers [true, false, true]
+   *      [].map { number => number.odd() }         => Answers []
+   */
+  method map(closure) {
+    self.checkNotNull(closure, "map")
+    return self.fold([], { newCollection, element =>
+      newCollection.add(closure.apply(element))
+      newCollection
+    })
+  }
+
+  /**
+   * Flattens a collection of collections: Map + flatten operation
+   *
+   * @see map
+   * @see flatten
+   *
+   * Example:
+   *     object klaus {
+   *       method languages() = ["c", "cobol", "pascal"]
+   *     }
+   *
+   *     object fritz {
+   *       method languages() = ["java", "perl"]
+   *     }
+   *
+   *
+   *     [klaus, fritz].flatMap({ person => person.languages() })
+   *       => Answers ["c", "cobol", "pascal", "java", "perl"]
+   */
+  method flatMap(closure) {
+    self.checkNotNull(closure, "flatMap")
+    return self.fold(self.newInstance(), { flattenedList, element =>
+      flattenedList.addAll(closure.apply(element))
+      flattenedList
+    })
+  }
+
+  /**
+   * Answers a new collection that contains the elements that
+   * meet a given condition. The condition is a closure argument that
+   * takes a single element and answers a boolean.
+   * @returns another collection (same type as self one)
+   *
+   * Example:
+   *      const overageUsers = users.filter({ user => user.age() >= 18 })
+   *      #{1, 2, 3, 4, 5}.filter { number => number.even() }   => Answers #{2, 4}
+   *      [1, 2, 3].filter { number => number.even() }          => Answers [2]
+   *      #{}.filter { number => number.even() }                => Answers #{}
+   */
+  method filter(closure) {
+    self.checkNotNull(closure, "filter")
+     return self.fold(self.newInstance(), { newCollection, element =>
+      if (closure.apply(element))
+         newCollection.add(element)
+      newCollection
+    })
+  }
+
+  /**
+   * Answers whether this collection contains the specified element.
+   *
+   * Example:
+   *      [].contains(3)        => Answers false
+   *      [1, 2, 3].contains(2) => Answers true
+   */
+  method contains(element) = self.any {one => element == one }
+
+  /**
+   * Flattens a collection of collections
+   *
+   * Example:
+   *     [ [1, 2], [3], [4, 0], [] ].flatten()  
+   *       => Answers [1, 2, 3, 4, 0]
+   *
+   */
+  method flatten() = self.flatMap { it => it }
+
+  /** @private */
+  /*
+   * String representation of this collection object.
+   * Optimized version for long collections
+   *
+   * @see Object#toString()
+   */
+  override method toString() {
+    const size = self.size()
+    const internalCollection = if (size > 20) "..." + size + " elements" else self.map{ e => if (e === null) "null" else e.printString() }.join(", ")
+    return self.toStringPrefix() + internalCollection + self.toStringSuffix()
+  }
+
+  /** @private */
+  method toStringPrefix()
+
+  /** @private */
+  method toStringSuffix()
+
+  /**
+  * Provides a (short) visual representation of this collection.
+  */
+  override method printString() {
+    return self.toStringPrefix() + self.kindName() + " (" + self.size() + ")" + self.toStringSuffix()
+  }
+
+  /** Converts a collection to a list */
+  method asList()
+
+  /** Converts a collection to a set (removing duplicates if necessary)
+   *
+   * Examples:
+   *    [1, 2, 3].asSet()       => Answers #{1, 2, 3}
+   *    [].asSet()              => Answers #{}
+   *    [1, 2, 1, 1, 2].asSet() => Answers #{1, 2}
+   *
+   *    #{1, 2, 3}.asSet()      => Answers #{1, 2, 3}
+   *    #{}.asSet()             => Answers #{}
+   *
+   * @see Set
+   */
+  method asSet()
+
+  /**
+   * Answers a new collection of the same type and with the same content
+   * as self. Supports empty collections.
+   *
+   * @returns a new collection
+   *
+   * Example:
+   *      const usersCopy = users.copy()
+   */
+  method copy() {
+    const copy = self.newInstance()
+    copy.addAll(self)
+    return copy
+  }
+
+  /**
+   * Answers a new collection without element that is passed by parameter.
+   * If the element occurs more than once in the collection, all occurrences
+   * will be removed.
+   *
+   * @returns a new Collection
+   *
+   * Example:
+   *      [1, 5, 9, 2, 4].copyWithout(9) => Answers [1, 5, 2, 4]
+   *      [1, 5, 9, 2, 9].copyWithout(9) => Answers [1, 5, 2]
+   *
+   */
+  method copyWithout(elementToRemove) {
+    return self.filter{ element => element != elementToRemove }
+  }
+
+  /**
+   * Answers a new collection with the added element which is received by parameter.
+   *
+   * @returns a new Collection
+   *
+   * Example:
+   *      [1, 5, 9, 2, 4].copyWith(9) => Answers [1, 5, 2, 4, 9]
+   *
+   */
+  method copyWith(elementToAdd) {
+    const copy = self.copy()
+    copy.add(elementToAdd)
+    return copy
+  }
+
+  /**
+   * Answers a new List that contains the elements of self collection
+   * sorted by a criteria given by a closure. The closure receives two objects
+   * X and Y and answers a boolean, true if X should come before Y in the
+   * resulting collection. Supports empty collections.
+   *
+   * @returns a new List
+   *
+   * Example:
+   *      const usersByAge = users.sortedBy({ a, b => a.age() < b.age() })
+   *      const studentsByNameDesc = students.sortedBy({ a, b => a.name() > b.name() })
+   *      [1, 5, 9, 2, 4].sortedBy { a, b => a < b } => Answers [1, 2, 4, 5, 9]
+   *      [1, 5, 9, 2, 4].sortedBy { a, b => a > b } => Answers [9, 5, 4, 2, 1]
+   *      [].sortedBy { a, b => a > b }              => Answers []
+   *
+   */
+  method sortedBy(closure) {
+    const copy = self.copy().asList()
+    copy.sortBy(closure)
+    return copy
+  }
+
+
+  /**
+   * Answers a new, empty collection of the same type as self.
+   * @returns a new collection
+   *
+   * Example:
+   *      const newCollection = users.newInstance()
+   */
+  method newInstance()
+
+  /**
+  * @see subclasses implementations
+  */
+  method anyOne() = throw new Exception(message = "Should be implemented by the subclasses")
+
+  /**
+  * @see subclasses implementations
+  */
+  method add(element) = throw new Exception(message = "Should be implemented by the subclasses")
+
+  /**
+  * @see subclasses implementations
+  */
+  method remove(element) = throw new Exception(message = "Should be implemented by the subclasses")
+
+  /**
+  * @see subclasses implementations
+  */
+  method fold(element, closure) = throw new Exception(message = "Should be implemented by the subclasses")
+
+  /**
+   * @see subclasses implementations
+   */
+  method size() = throw new Exception(message = "Should be implemented by the subclasses")
+
+  /**
+   * Removes all of the elements from this set. This is a side effect operation.
+   *
+   * @see subclasses implementations
+   */
+  method clear()
+
+  /**
+   * Answers the concatenated string representation of the elements in the given set.
+   * You can pass an optional character as an element separator (default is ",")
+   *
+   * Example:
+   *      ["hola", "como", "estas"].join(" ") ==> Answers "hola como estas"
+   */
+  method join(separator) {
+    if (self.isEmpty()) return ""
+    const newList = self.asList()
+    return newList.subList(1).fold(newList.first().toString(), { string, element => string + separator + element.toString() })
+  }
+
+  /**
+   * Answers the concatenated string representation of the elements in the given set
+   * with default element separator (",")
+   *
+   * Example:
+   *      ["hola", "como", "estas"].join()    ==> Answers "hola,como,estas"
+   */
+  method join() = self.join(",")
+
+}
+'
+]
+
+{ #category : #'as yet unclassified' }
+WollokReducedLoader >> wollokLangException [
+
+^ '/**
+ * Base class for all Exceptions. Every exception and its subclasses
+ * indicates conditions that a reasonable application might want to catch.
+ *
+ * @author jfernandes
+ * @since 1.0
+ */
+class Exception {
+  /** specified detail message. */
+  const property message = null
+
+  /** specified cause */
+  const property cause = null
+
+  /** Prints this exception and its backtrace to the console */
+  method printStackTrace() { self.printStackTrace(console) }
+
+  /** Prints this exception and its backtrace as a string value */
+  method getStackTraceAsString() {
+    const printer = new StringPrinter()
+    self.printStackTrace(printer)
+    return printer.getBuffer()
+  }
+
+  /**
+   * @private
+   * Prints this exception and its backtrace to the specified printer
+   */
+  method printStackTrace(printer) { self.printStackTraceWithPrefix("", printer) }
+
+  /** @private */
+  method printStackTraceWithPrefix(prefix, printer) {
+    printer.println(prefix + self.className() + (if (message != null) (": " + message.toString()) else ""))
+
+    // TODO: eventually we will need a stringbuffer or something to avoid memory consumption
+    self.getStackTrace().forEach { e =>
+      printer.println("\tat " + e.contextDescription() + " [" + e.location() + "]")
+    }
+
+    if (cause != null)
+      cause.printStackTraceWithPrefix("Caused by: ", printer)
+  }
+
+  /** @private */
+  method createStackTraceElement(contextDescription, location) = new StackTraceElement(contextDescription = contextDescription, location = location)
+
+  /** Provides programmatic access to the stack trace information
+   * printed by printStackTrace() with full path files for linking
+   */
+  method getFullStackTrace() native
+
+  /** Provides programmatic access to the stack trace information
+   * printed by printStackTrace().
+   */
+  method getStackTrace() native
+
+  /** Overrides the behavior to compare exceptions */
+  override method ==(other) = other.className() == self.className() && other.message() == self.message()
+}'
+]
+
+{ #category : #'as yet unclassified' }
+WollokReducedLoader >> wollokLangList [
+
+^ '/**
+ *
+ * An ordered collection (also known as a sequence).
+ * You iterate the list the same order elements are inserted.
+ * The user can access elements by their integer index (position in the list).
+ * A List can contain duplicate elements.
+ *
+ * @author jfernandes
+ * @since 1.3
+ */
+class List inherits Collection {
+
+  /**
+   * Answers the element at the specified position in this non-empty list.
+   *
+   * The first char value of the sequence is at index 0,
+   * the next at index 1, and so on, as for array indexing.
+   * Index must be a positive and integer value.
+   *
+   * Examples:
+   *     [].get(0)        => Throws error, list must not be empty
+   *     [1].get(-1)      => Throws error, index must be 0 or positive
+   *     [1, 2, 3].get(3) => Throws error, index exceeds list size
+   *     [5, 2, 7].get(0) => Answers 5
+   */
+  method get(index) native
+
+  /** Creates a new list */
+  override method newInstance() = []
+
+  /**
+   * Answers any element of a non-empty collection.
+   *
+   * Examples
+   *    #[1, 2, 3].anyOne() => Answers 3, for example
+   *    #[].anyOne()        => Throws error, list must not be empty
+   */
+  override method anyOne() {
+    self.validateNotEmpty("anyOne")    
+    return self.get(0.randomUpTo(self.size()).truncate(0))
+  }
+
+  /**
+   * Answers first element of the non-empty list
+   *
+   * @returns first element
+   *
+   * Example:
+   *    [1, 2, 3, 4].first()  => Answers 1
+   *    [].first()            => Throws error, list must not be empty
+   */
+  method first() = self.head()
+
+  /**
+   * Synonym for first method
+   */
+  method head() = self.get(0)
+
+  /**
+   * Answers the last element of the non-empty list.
+   *
+   * @returns last element
+   *
+   * Examples:
+   *    [1, 2, 3, 4].last()  => Answers 4
+   *    [].last()            => Throws error, list must not be empty
+   */
+  method last() = self.get(self.size() - 1)
+
+  /** @private */
+  override method toStringPrefix() = "["
+
+  /** @private */
+  override method toStringSuffix() = "]"
+
+  /**
+   * Converts this collection to a list. No effect on Lists.
+   *
+   * @see List
+   */
+  override method asList() = self
+
+  /** 
+   * Converts a collection to a set (removing duplicates if necessary)
+   *
+   * Examples:
+   *    [1, 2, 3].asSet()       => Answers #{1, 2, 3}
+   *    [].asSet()              => Answers #{}
+   *    [1, 2, 1, 1, 2].asSet() => Answers #{1, 2}
+   *
+   *    #{1, 2, 3}.asSet()      => Answers #{1, 2, 3}
+   *    #{}.asSet()             => Answers #{}
+   *
+   * @see Set
+   */
+  override method asSet() {
+    const result = #{}
+    result.addAll(self.withoutDuplicates())
+    return result
+  }
+
+  /**
+   * Answers a view of the portion of this list between the specified start index
+   * and the end of the list. Remember first element is position 0,
+   * second is position 1, and so on.
+   * If toIndex exceeds length of list, no error is thrown.
+   *
+   * Example:
+   *    [1, 5, 3, 2, 7, 9].subList(2) => Answers [3, 2, 7, 9]
+   *    [1, 5, 3, 2, 7, 9].subList(4) => Answers [7, 9]
+   *    [].subList(1)                 => Answers []
+   */
+  method subList(start) {
+    if (self.isEmpty()) return []
+    if (start >= self.size()) return []
+    return self.subList(start, self.size() - 1)
+  }
+
+  /**
+   * Answers a view of the portion of this list between the specified fromIndex
+   * and toIndex, both inclusive. Remember first element is position 0,
+   * second is position 1, and so on.
+   * If toIndex exceeds length of list, no error is thrown.
+   *
+   * Example:
+   *    [1, 5, 3, 2, 7, 9].subList(2, 3) => Answers [3, 2]
+   *    [1, 5, 3, 2, 7, 9].subList(4, 6) => Answers [7, 9]
+   *    [].subList(1, 2)                 => Answers []
+   */
+  method subList(start, end) {
+    self.checkNotNull(start, "subList")
+    self.checkNotNull(end, "subList")
+    if (self.isEmpty() || start >= self.size())
+      return self.newInstance()
+
+    const newList = self.newInstance()
+    const _start = start.coerceToInteger().limitBetween(0, self.size() - 1)
+    const _end = end.coerceToInteger().limitBetween(0, self.size() - 1)
+    (_start.._end).forEach { i => newList.add(self.get(i)) }
+    return newList
+  }
+
+  /**
+   *
+   * Sorts elements of a list by a specific closure.
+   * Order of elements is modified (produces effect).
+   *
+   * Examples:
+   *    const list = [2, 9, 3]
+   *    list.sortBy { el1, el2 => el1 > el2 }
+   *    list.get(0)            => Answers 9
+   *
+   * @see List#sortedBy
+   */
+  method sortBy(closure) native
+
+  /**
+   * Takes first n elements of a list.
+   *
+   * Examples:
+   *    [1,9,2,3].take(5)  ==> Answers [1, 9, 2, 3]
+   *    [1,9,2,3].take(2)  ==> Answers [1, 9]
+   *    [1,9,2,3].take(-2) ==> Answers []
+   *    [].take(2)         ==> Answers []
+   */
+  method take(n) {
+    self.checkNotNull(n, "take")
+    return if (n <= 0) self.newInstance() else self.subList(0, n - 1)
+  }
+
+  /**
+   * Answers a new list dropping first n elements of a list.
+   * This operation has no side effect.
+   *
+   * Examples:
+   *     [1, 9, 2, 3].drop(3)  ==> Answers [3]
+   *     [1, 9, 2, 3].drop(1)  ==> Answers [9, 2, 3]
+   *     [1, 9, 2, 3].drop(-2) ==> Answers [1, 9, 2, 3]
+   *     [].drop(2)            ==> Answers []
+   */
+  method drop(n) {
+    self.checkNotNull(n, "drop")
+    return if (n >= self.size()) self.newInstance() else self.subList(n, self.size() - 1)
+  }
+
+  /**
+   * Answers a new list reversing the elements,
+   * so that first element becomes last element of the new list and so on.
+   * This operation has no side effect.
+   *
+   * Example:
+   *    [1, 9, 2, 3].reverse()  ==> Answers [3, 2, 9, 1]
+   *    [1, 2].reverse()        ==> Answers [2, 1]
+   *    [].reverse()            ==> Answers []
+   *
+   */
+  method reverse() = self.subList(self.size() - 1, 0)
+
+  /**
+   *
+   * Answers a new list with the elements meeting
+   * a given condition. The condition is a closure argument that
+   * takes a single element and answers a boolean.
+   *
+   * Example:
+   *      [1, 2, 3, 4, 5].filter { number => number.even() }   => Answers [2, 4]
+   *      [].filter { number => number.even() }                => Answers []
+   *
+   * @see Collection#filter(closure)
+   */
+  override method filter(closure) native
+
+  /**
+   * Answers whether this collection contains the specified element.
+   *
+   * Example:
+   *      [].contains(3)        => Answers false
+   *      [1, 2, 3].contains(2) => Answers true
+   *      [1, 2, 3].contains(4) => Answers false
+   *
+   * @see Collection#contains(obj)
+   */
+  override method contains(obj) native
+
+  /**
+   * Answers the element that represents the maximum value in the collection.
+   * The criteria is by direct comparison of the elements (they must be sortable).
+   * If collection is empty, an ElementNotFound exception is thrown.
+   *
+   * Example:
+   *       [11, 1, 4, 8, 3, 15, 6].max() =>  Answers 15
+   *       [].max()                      =>  Throws error, list must not be empty
+   *
+   * @see Collection#max()
+   */
+  override method max() native
+
+  /**
+   * Reduce a collection to a certain value, beginning with a seed or initial value
+   *
+   * Examples
+   *     [1, 9, 3, 8].fold(0, {acum, each => acum + each})
+   *           => Answers 21, the sum of all elements
+   *
+   *     [].fold(0, {acum, each => acum + each})
+   *           => Answers 0, the seed.
+   *
+   *     const numbers = [3, 2, 9, 1, 7]
+   *     numbers.fold(numbers.anyOne(), { acum, number => acum.max(number) })
+   *           => Answers 9, the maximum of all elements
+   *
+   */
+  override method fold(initialValue, closure) native
+
+  /**
+   * Finds the first element matching the boolean closure,
+   * or evaluates the continuation block closure if no element is found
+   *
+   * Examples:
+   *     [1, 9, 3, 8].findOrElse({ n => n.even() }, { 100 })  => Answers  8
+   *     [1, 5, 3, 7].findOrElse({ n => n.even() }, { 100 })  => Answers  100
+   */
+  override method findOrElse(predicate, continuation) native
+
+  /**
+   * Adds the specified element as last one
+   *
+   * Example:
+   *     const list = []
+   *     list.add(3)   => list = [3]
+   *     list.add(2)   => list = [3, 2]
+   *     list.add(2)   => list = [3, 2, 2]
+   */
+  override method add(element) native
+
+  /**
+   * Removes an element in this list, if it is present.
+   *
+   * Example:
+   *     const list = [2, 3]
+   *     list.remove(3) => list = [2]
+   *     list.remove(4) => list = [2], remove operation produces no effect
+   */
+  override method remove(element) native
+
+  /**
+   * Answers the number of elements
+   *
+   * Example:
+   *     [2, 3].size()   => Answers 2
+   *     [].size()       => Answers 0
+   */
+  override method size() native
+
+  /**
+   * Removes all of the mappings from this Dictionary.
+   * This is a side effect operation.
+   *
+   * Example:
+   *     const list = [2, 3]
+   *     list.clear()     => list = []
+   */
+  override method clear() native
+
+  /**
+   * Answers the concatenated string representation of the elements in the given set.
+   * You can pass an optional character as an element separator (default is ",")
+   *
+   * Examples:
+   *     [1, 5, 3, 7].join(":") => Answers "1:5:3:7"
+   *     ["you","will","love","wollok"].join(" ") => Answers "you will love wollok"
+   */
+  override method join(separator) native
+
+  /**
+   *
+   * Answers the concatenated string representation of the elements in the given set,
+   * using default element separator (",")
+   *
+   * Examples:
+   *     ["you","will","love","wollok"].join()    => Answers "you,will,love,wollok"
+   */
+  override method join() native
+
+  /**
+   * A list is == another list if all elements are equal (defined by == message)
+   *
+   *
+   * Examples:
+   *     [] == []         => Answers true
+   *     [1, 2] == [2, 1] => Answers false
+   *     [1, 2] == [1, 2] => Answers true
+   */
+  override method ==(other) native
+
+  /**
+   * Answers the list without duplicate elements. Preserves order of elements.
+   *
+   * [1, 3, 1, 5, 1, 3, 2, 5].withoutDuplicates() => Answers [1, 3, 5, 2]
+   * [].withoutDuplicates()                       => Answers []
+   */
+  method withoutDuplicates() native
+
+}'
 ]
 
 { #category : #'as yet unclassified' }
@@ -523,5 +1619,581 @@ WollokReducedLoader >> wollokLangObject [
   }
 
   method doMessageNotUnderstood(messageName, parameters) native
+}'
+]
+
+{ #category : #'as yet unclassified' }
+WollokReducedLoader >> wollokLangSet [
+
+^ '/**
+ *
+ * A collection that contains no duplicate elements.
+ * It models the mathematical set abstraction.
+ * A Set guarantees no order of elements.
+ *
+ * Note: Great care must be exercised if mutable objects are used as set elements. 
+ * The behavior of a set is not specified if the value of an object is changed in
+ * a manner that affects equals comparisons while the object is an element in the set.
+ * A special case of this prohibition is that it is not permissible for a set to contain
+ * itself as an element.
+ *
+ * @author jfernandes
+ * @since 1.3
+ */
+class Set inherits Collection {
+
+  /** @private */
+  override method newInstance() = #{}
+
+  /** @private */
+  override method toStringPrefix() = "#{"
+
+  /** @private */
+  override method toStringSuffix() = "}"
+
+  /**
+   * Converts this set to a list.
+   *
+   * Examples
+   *    #{1, 2, 3}.asList() => Answers [1, 2, 3]
+   *    #{}.asList()        => Answers []
+   *
+   * @see List
+   */
+  override method asList() {
+    const result = []
+    result.addAll(self)
+    return result
+  }
+
+  /** Converts a collection to a set (removing duplicates if necessary)
+   *
+   * Examples:
+   *    [1, 2, 3].asSet()       => Answers #{1, 2, 3}
+   *    [].asSet()              => Answers #{}
+   *    [1, 2, 1, 1, 2].asSet() => Answers #{1, 2}
+   *
+   *    #{1, 2, 3}.asSet()      => Answers #{1, 2, 3}
+   *    #{}.asSet()             => Answers #{}
+   *
+   * @see Set
+   */
+  override method asSet() {
+    return self
+  }
+
+  /**
+   * Answers any element of a non-empty collection
+   *
+   * Examples
+   *    #{1, 2, 3}.anyOne() => Answers 1, for example
+   *    #{}.anyOne()        => Throws error, set must not be empty
+   *
+   */
+  override method anyOne() native
+
+  /**
+   * Answers a new Set with the elements of both self and another collection.
+   *
+   * Examples
+   *     #{1, 2}.union(#{5, 2})   => #{1, 2, 5}
+   *     #{}.union(#{3})          => #{3}
+   *
+   * @returns a Set
+   */
+  method union(another) = self + another
+
+  /**
+   * Answers a new Set with the elements of self that exist in another collection
+   *
+   * Examples
+   *     #{1, 2}.intersection(#{5, 2})   => #{2}
+   *     #{}.intersection(#{3})          => #{}
+   *
+   * @returns a Set
+   */
+  method intersection(another) =
+    self.filter({it => another.contains(it)})
+
+  /**
+   * Answers a new Set with the elements of self that don''t exist in another collection
+   *
+   * Examples
+   *     #{1, 2}.difference(#{5, 2}) => #{1}
+   *     #{3}.difference(#{})        => #{3}
+   *
+   * @returns a Set
+   */
+  method difference(another) =
+    self.filter({it => !another.contains(it)})
+
+  /**
+   * Reduce a collection to a certain value, beginning with a seed or initial value.
+   *
+   * Examples
+   *     #{1, 9, 3, 8}.fold(0, {acum, each => acum + each})
+   *           => Answers 21, the sum of all elements
+   *
+   *     #{}.fold(0, {acum, each => acum + each})
+   *           => Answers 0, the seed.
+   *
+   *     var numbers = #{3, 2, 9, 1, 7}
+   *     numbers.fold(numbers.anyOne(), { acum, number => acum.max(number) })
+   *           => Answers 9, the maximum of all elements
+   *
+   */
+  override method fold(initialValue, closure) native
+
+  /**
+   * Answers a new set with the elements meeting
+   * a given condition. The condition is a closure argument that
+   * takes a single element and answers a boolean.
+   *
+   * Example:
+   *      #{1, 2, 3, 4, 5}.filter { number => number.even() }   => Answers #{2, 4}
+   *      #{}.filter { number => number.even() }                => Answers #{}
+   *
+   * @see Collection#filter(closure)
+   */
+  override method filter(closure) native
+
+
+  /**
+   * Answers the element that represents the maximum value in the collection.
+   * The criteria is by direct comparison of the elements.
+   * If set is empty, an ElementNotFound exception is thrown.
+   *
+   * Example:
+   *       #{1, 9, 3, 15}.max()  =>  Answers 15
+   *       #{}.max()             =>  Throws error, set must not be empty
+   *
+   * @see Collection#max()
+   */
+  override method max() native
+
+  /**
+   * Tries to find an element in a collection (based on a closure) or
+   * applies a continuation closure.
+   *
+   * Examples:
+   *     #{1, 9, 3, 8}.findOrElse({ n => n.even() }, { 100 })  => Answers  8
+   *     #{1, 5, 3, 7}.findOrElse({ n => n.even() }, { 100 })  => Answers  100
+   */
+  override method findOrElse(predicate, continuation) native
+
+  /**
+   * Adds the specified element to this set if it is not already present.
+   *
+   * Example:
+   *     const set = #{}
+   *     set.add(3)   => set = #{3}
+   *     set.add(2)   => set = #{2, 3}
+   *     set.add(2)   => set = #{2, 3}, second add produces no effect
+   */
+  override method add(element) native
+
+  /** @private */
+  method unsafeAdd(element) native
+  
+  /**
+   * Removes the specified element from this set if it is present.
+   *
+   * Example:
+   *     const set = #{2, 3}
+   *     set.remove(3) => set = #{2}
+   *     set.remove(4) => set = #{2}, remove operation produces no effect
+   */
+  override method remove(element) native
+
+  /** Answers the number of elements in this set (its cardinality).
+   *
+   * Example:
+   *     #{2, 3}.size()   => Answers 2
+   *     #{}.size()       => Answers 0
+   */
+  override method size() native
+
+  /**
+   * Removes all of the elements from this set. This is a side effect operation.
+   *
+   * Example:
+   *     const set = #{2, 3}
+   *     set.clear()         => set = #{}
+   */
+  override method clear() native
+
+  /**
+   * Answers the concatenated string representation of the elements in the given set.
+   * You can pass an optional character as an element separator (default is ",")
+   *
+   * Examples:
+   *     #{1, 5, 3, 7}.join(":")                   => Answers "1:5:3:7"
+   *     #{"you","will","love","wollok"}.join(" ") => Answers "love will wollok you"
+   *     #{}.join(",")                             => Answers ""
+   */
+  override method join(separator) native
+
+  /**
+   * Answers the concatenated string representation of the elements in the given set
+   * with default element separator (",")
+   *
+   * Example:
+   *     #{"you","will","love","wollok"}.join()    => Answers "love,will,wollok,you"
+   */
+  override method join() native
+
+  /**
+   * Answers whether this collection contains the specified element.
+   *
+   * Example:
+   *      #{}.contains(3)        => Answers false
+   *      #{1, 2, 3}.contains(2) => Answers true
+   *      #{1, 2, 3}.contains(4) => Answers false
+   *
+   * @see List#contains(other)
+   */
+  override method contains(other) native
+
+  /**
+   * Two sets are equals if they have the same elements, no matter
+   * the order.
+   *
+   * Examples:
+   *     #{} == #{}         => Answers true
+   *     #{1, 2} == #{2, 1} => Answers true
+   *     #{3, 2} == #{2, 1} => Answers false
+   */
+  override method ==(other) native
+
+}
+'
+]
+
+{ #category : #'as yet unclassified' }
+WollokReducedLoader >> wollokLangString [
+
+^ '/**
+ * Strings are constant;
+ * their values cannot be changed after they are created.
+ *
+ * @author jfernandes
+ * @noInstantiate
+ */
+class String {
+  /** Answers the number of elements */
+  method length() native
+
+  /**
+   * Answers the char value at the specified index. An index ranges
+   * from 0 to length() - 1. The first char value of the sequence is
+   * at index 0, the next at index 1, and so on, as for array indexing.
+   * Parameter index must be a positive integer value.
+   */
+  method charAt(index) {
+    self.checkNotNull(index, "charAt")
+    if (!index.isInteger()) throw new DomainException(message = "charAt expects an integer instead of " + index)
+    return self.substring(index, index + 1)
+  }
+
+  /**
+   * Concatenates the specified string to the end of this string.
+   * Example:
+   *     "cares" + "s" => Answers "caress"
+   */
+  method +(other) = self.concat(other.toString())
+
+  /**
+   * Concatenates the specified string to the end of this string. Same as +.
+   * Example:
+   *     "cares".concat("s") => Answers "caress"
+   */
+  method concat(other) native
+
+  /**
+   * Tests if this string starts with the specified prefix.
+   * It is case sensitive.
+   *
+   * Examples:
+   *     "mother".startsWith("moth")  ==> Answers true
+   *     "mother".startsWith("Moth")  ==> Answers false
+   */
+  method startsWith(prefix) native
+
+  /**
+   * Tests if this string ends with the specified suffix.
+   * It is case sensitive.
+   * @see startsWith
+   */
+  method endsWith(suffix) native
+
+  /**
+   * Answers the index within this string of the first occurrence
+   * of the specified character.
+   * If character is not present, Answers -1
+   *
+   * Examples:
+   *     "pototo".indexOf("o")         ==> Answers 1
+   *     "unpredictable".indexOf("o")  ==> Answers -1
+   */
+  method indexOf(other) native
+
+  /**
+   * Answers the index within this string of the last
+   * occurrence of the specified character.
+   * If character is not present, Answers -1
+   *
+   * Examples:
+   *     "pototo".lastIndexOf("o")         ==> Answers 5
+   *     "unpredictable".lastIndexOf("o")  ==> Answers -1
+   */
+  method lastIndexOf(other) native
+
+  /**
+   * Converts all of the characters in this String to lower case
+   *
+   * Examples:
+   *     "Fer".toLowerCase()  ==> Answers "fer"
+   *     "".toLowerCase()     ==> Answers ""
+   */
+  method toLowerCase() native
+
+  /**
+   * Converts all of the characters in this String to upper case
+   *
+   * Examples:
+   *     "Fer".toUpperCase()  ==> Answers "FER"
+   *     "".toUpperCase()     ==> Answers ""
+   */
+  method toUpperCase() native
+
+  /**
+   * Answers a string whose value is this string,
+   * with any leading and trailing whitespace removed.
+   *
+   * Example:
+   *     "   emptySpace  ".trim()  ==> "emptySpace"
+   */
+  method trim() native
+
+  /**
+   * Answers a string reversing this string,
+   * so that first character becomes last character of the new string and so on.
+   *
+   * Example:
+   *     "hola".reverse()  ==> "aloh"
+   */
+  method reverse() native
+
+  /**
+   * @see take
+   *
+   * Example:
+   *     "word".takeLeft(3)  ==> Answers "wor"
+   *     "word".takeLeft(0)  ==> Answers ""
+   *     "word".takeLeft(-1) ==> Throws error
+   *     "".takeLeft(2)      ==> Answers ""
+   */
+  method takeLeft(length) = self.take(length)
+
+  /**
+   * Takes last n characters of this string.
+   * n must be zero-positive integer.
+   *
+   * Example:
+   *     "word".takeRight(3)  ==> Answers "ord"
+   *     "word".takeRight(0)  ==> Answers ""
+   *     "word".takeRight(-1) ==> Throws error
+   *     "".takeRight(2)      ==> Answers ""
+   */
+  method takeRight(_length) {
+    const length = _length.coerceToPositiveInteger().min(self.size())
+    return self.drop(self.size() - length)
+  }
+
+  method <(aString) native
+  method <=(aString) {
+    return self == aString || self < aString
+  }
+  method >(aString) native
+  method >=(aString) {
+    return self == aString || self > aString
+  }
+
+  /**
+   * Answers whether this string contains the specified sequence of char values.
+   * It is a case sensitive test.
+   *
+   * Examples:
+   *     "unusual".contains("usual")  ==> Answers true
+   *     "become".contains("CO")      ==> Answers false
+   */
+  method contains(element) native
+
+  /** Answers whether this string has no characters */
+  method isEmpty() = self.size() == 0
+
+  /**
+   * Compares this String to another String, ignoring case considerations.
+   *
+   * Example:
+   *    "WoRD".equalsIgnoreCase("Word")  ==> Answers true
+   */
+  method equalsIgnoreCase(aString) {
+    self.checkNotNull(aString, "equalsIgnoreCase")
+    return self.toUpperCase() == aString.toUpperCase()
+  }
+
+  /**
+   * Answers a substring of this string beginning from
+   * an inclusive index. Parameter index must be a positive
+   * integer value.
+   *
+   * Examples:
+   *     "substitute".substring(6)  ==> Answers "tute", second "t" is in position 6
+   *     "effect".substring(0)      ==> Answers "effect", has no effect at all
+   */
+  method substring(index) native
+
+  /**
+   * Answers a substring of this string beginning
+   * from an inclusive index up to another inclusive index
+   *
+   * Examples:
+   *     "walking".substring(2, 4)   ==> Answers "lk"
+   *     "walking".substring(3, 5)   ==> Answers "ki"
+   *     "walking".substring(0, 5)   ==> Answers "walki"
+   *     "walking".substring(0, 45)  ==> throws an out of range exception
+   */
+  method substring(startIndex, endIndex) native
+
+  /**
+   * Splits this string around matches of the given string.
+   * Answers a list of strings.
+   *
+   * Example:
+   *     "this,could,be,a,list".split(",")
+   *          ==> Answers ["this", "could", "be", "a", "list"]
+   *     "Esto Es una prueba".split(" ")
+   *          ==> Answers ["Esto", "Es", "una", "prueba"]
+   *     "Esto Es una".split("")
+   *          ==> Answers ["E","s","t","o"," ","E","s"," ","u","n","a"] , splitting into a character list
+   *     "Esto Es una".split("|")
+   *          ==> Answers ["Esto Es una"], the same original string
+   *     "texto de prueba".split("texto de prueba")
+   *          ==> Answers ["",""]
+   *     "a,b,,c,".split(",")
+   *          ==> Answers ["a", "b", "", "c", ""]
+   *     "texto de prueba".split("de")
+   *          ==> Answers ["texto ", " prueba"]
+   *     "aaaa".split("aa")
+   *          ==> Answers ["", "", ""]
+   */
+  method split(expression) {
+    self.checkNotNull(expression, "split")
+    var text = self
+    const result = []
+    if (text == "" && expression == "") return result
+    const size = text.size() - 1
+    if (expression == "") {
+      return (0 .. size).fold([], { total, index => 
+        total.add(text.charAt(index))
+        return total
+      })
+    } else {
+      (0 .. size).forEach{ i =>
+        if (text.contains(expression)) {
+          const indexOfExpression = text.indexOf(expression)
+          result.add(text.substring(0, indexOfExpression))
+          text = text.substring(indexOfExpression + expression.size())
+        }
+      }
+    }
+    result.add(text)
+    return result
+  }
+
+  /**
+   * Answers a string resulting from replacing all occurrences of
+   * expression in this string with replacement
+   *
+   * Example:
+   *     "stupid is what stupid does".replace("stupid", "genius")
+   *           ==> Answers "genius is what genius does"
+   */
+  method replace(expression, replacement) native
+
+  /** This object (which is already a string!) is itself returned */
+  override method toString() native
+
+  /** String implementation of printString,
+   * simply adds quotation marks
+   */
+  override method printString() = ''"'' + self.toString() + ''"''
+
+  /** 
+   * Compares this string to the specified object.
+   * The result is true if and only if the
+   * argument is not null and is a String object
+   * that represents the same sequence of characters as this object.
+   */
+  override method ==(other) native
+
+  /** A synonym for length */
+  method size() = self.length()
+
+  /**
+   * Takes first n characters of this string.
+   * n must be zero-positive integer.
+   *
+   * Examples:
+   *     "lowercase".take(3)  ==> Answers "low"
+   *     "lowercase".take(0)  ==> Answers ""
+   *     "lowercase".take(-1) ==> Throws error
+   *     "".take(2)           ==> Answers ""
+   */
+  method take(n) {
+    self.checkNotNull(n, "take")
+    return self.substring(0, n.min(self.size()))
+  }
+
+  /**
+   * Answers a new string dropping
+   * first n characters of this string.
+   * n must be zero-positive integer.
+   *
+   * Examples:
+   *      "caption".drop(4)    ==> Answers "ion"
+   *      "caption".drop(0)    ==> Answers "caption"
+   *      "caption".drop(-1)   ==> Throws error
+   *      "".drop(2)           ==> Answers ""
+   */
+  method drop(n) {
+    self.checkNotNull(n, "drop")
+    return self.substring(n.min(self.size()), self.size())
+  }
+
+  /**
+   * Splits this strings into several words.
+   *
+   * Examples:
+   *      "how does words work?".words()
+   *            ==> Answers ["how", "does", "words", "work?"]
+   *
+   *      "".words() ==> Answers []
+   */
+  method words() = self.split(" ")
+
+  /**
+   * Changes the first letter of every word to
+   * upper case in this string.
+   *
+   * Example:
+   *      "javier fernandes".capitalize() ==> Answers "Javier Fernandes"
+   */
+  method capitalize() {
+    const capitalizedPhrase = self.words().fold("", { words, word => words + word.take(1).toUpperCase() + word.drop(1).toLowerCase() + " " })
+    return capitalizedPhrase.take(capitalizedPhrase.size() - 1)
+  }
+
 }'
 ]
