@@ -5,6 +5,14 @@ Class {
 }
 
 { #category : #tests }
+WollowVMInterpreterBooleanTests >> testFalseIsIdenticalToFalse [
+
+	| returnValue |
+	returnValue := self interpretExpression: 'false === false'.
+	self assert: (interpreter isTrue: returnValue)
+]
+
+{ #category : #tests }
 WollowVMInterpreterBooleanTests >> testFalseOrFalseReturnsCorrectValue [
 
 	| returnValue |
